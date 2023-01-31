@@ -25,4 +25,146 @@
 #ifndef CELTRE_SOFTWARE_SDL2_CPP_DIRECT_SUBSYSTEMS_HPP
 #define CELTRE_SOFTWARE_SDL2_CPP_DIRECT_SUBSYSTEMS_HPP
 
+#include <cstdint>
+#include <ostream>
+#include <string>
+#include <type_traits>
+
+#include <SDL.h>
+
+namespace celtresoft::sdl2cpp_direct {
+enum class subsystems {
+  none            = 0x00000000U,
+  timer           = SDL_INIT_TIMER,
+  audio           = SDL_INIT_AUDIO,
+  video           = SDL_INIT_VIDEO,
+  joystick        = SDL_INIT_JOYSTICK,
+  haptic          = SDL_INIT_HAPTIC,
+  game_controller = SDL_INIT_GAMECONTROLLER,
+  events          = SDL_INIT_EVENTS,
+
+#if SDL_VERSION_ATLEAST(2, 0, 9)
+  sensor = SDL_INIT_SENSOR,
+#endif // SDLv >= 2.0.9
+
+  no_parachute
+#if SDL_VERSION_ATLEAST(2, 0, 4)
+  [[deprecated("for compatibility, this flag is ignored")]]
+#endif // SDLv >= 2.0.4
+  = SDL_INIT_NOPARACHUTE,
+
+  everything = SDL_INIT_EVERYTHING
+};
+
+using subsystems_underlying_t = std::underlying_type_t<subsystems>;
+
+auto operator~(subsystems const& obj) -> subsystems {
+  return static_cast<subsystems>(~static_cast<subsystems_underlying_t>(obj));
+}
+
+auto operator|(subsystems const& lhs, subsystems const& rhs) -> subsystems {
+  return static_cast<subsystems>(static_cast<subsystems_underlying_t>(lhs) |
+                                 static_cast<subsystems_underlying_t>(rhs));
+}
+
+auto operator&(subsystems const& lhs, subsystems const& rhs) -> subsystems {
+  return static_cast<subsystems>(static_cast<subsystems_underlying_t>(lhs) &
+                                 static_cast<subsystems_underlying_t>(rhs));
+}
+
+auto operator^(subsystems const& lhs, subsystems const& rhs) -> subsystems {
+  return static_cast<subsystems>(static_cast<subsystems_underlying_t>(lhs) ^
+                                 static_cast<subsystems_underlying_t>(rhs));
+}
+
+auto operator|=(subsystems& lhs, subsystems const& rhs) -> subsystems& {
+  lhs = lhs | rhs;
+  return lhs;
+}
+
+auto operator&=(subsystems& lhs, subsystems const& rhs) -> subsystems& {
+  lhs = lhs & rhs;
+  return lhs;
+}
+
+auto operator^=(subsystems& lhs, subsystems const& rhs) -> subsystems& {
+  lhs = lhs ^ rhs;
+  return lhs;
+}
+
+auto operator<<(std::ostream& stream, subsystems const& obj) -> std::ostream& {
+  using enum celtresoft::sdl2cpp_direct::subsystems;
+  std::string final_str{};
+  stream << "[";
+
+  auto combine_subsystems = [&const obj, &final_str]() {
+    auto concat = [&final_str]() {
+      if (!final_str.empty()) {
+        final_str += ", ";
+      }
+    };
+
+    if ((obj & timer) != none) {
+      concat();
+      final_str = "Timer";
+    }
+
+    if ((obj & audio) != none) {
+      concat();
+      final_str = "Audio";
+    }
+
+    if ((obj & video) != none) {
+      concat();
+      final_str = "Video";
+    }
+
+    if ((obj & joystick) != none) {
+      concat();
+      final_str = "Joystick";
+    }
+
+    if ((obj & haptic) != none) {
+      concat();
+      final_str = "Haptic";
+    }
+
+    if ((obj & game_controller) != none) {
+      concat();
+      final_str = "Game Controller";
+    }
+
+    if ((obj & events) != none) {
+      concat();
+      final_str = "Events";
+    }
+
+#if SDL_VERSION_ATLEAST(2, 0, 9)
+    if ((obj & sensor) != none) {
+      concat();
+      final_str = "Sensor";
+    }
+#endif // SDLv >= 2.0.9
+
+#if !SDL_VERSION_ATLEAST(2, 0, 4)
+    if ((obj & subsystems::no_parachute) != subsystems::none) {
+      concat();
+      final_str = "No Parachute";
+    }
+#endif // SDLv < 2.0.4
+  };
+
+  if (obj == subsystems::none) {
+    final_str = "None";
+  } else if (obj == subsystems::everything) {
+    final_str = "Everything";
+  } else {
+    combine_subsystems();
+  }
+
+  stream << final_str << "]";
+  return stream;
+}
+} // namespace celtresoft::sdl2cpp_direct
+
 #endif // CELTRE_SOFTWARE_SDL2_CPP_DIRECT_SUBSYSTEMS_HPP

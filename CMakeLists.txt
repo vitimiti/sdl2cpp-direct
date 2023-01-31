@@ -50,7 +50,14 @@ add_library(${PROJECT_NAME} INTERFACE)
 target_sources(${PROJECT_NAME} INTERFACE FILE_SET HEADERS FILES
                                          ${PROJECT_NAME}_HEADERS)
 
-target_precompile_headers(${PROJECT_NAME} INTERFACE <SDL.h>)
+target_precompile_headers(
+  ${PROJECT_NAME}
+  INTERFACE
+  <cstdint>
+  <ostream>
+  <string>
+  <type_traits>
+  <SDL.h>)
 
 target_link_libraries(${PROJECT_NAME} INTERFACE ${SDL2_LIBRARIES})
 # This library isn't meant to be installed at all!
